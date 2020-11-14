@@ -23,6 +23,6 @@
 int main() {
     NetworkCandy::uPnPHandler uPnPHandler("31137", "RPGRPZ");
     uPnPHandler.ensurePortMapping();
-    uPnPHandler.deletePortMapping();
+    uPnPHandler.mayDeletePortMapping();
     return 0;
 }

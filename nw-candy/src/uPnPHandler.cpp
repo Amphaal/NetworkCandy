@@ -60,7 +60,7 @@ bool NetworkCandy::uPnPHandler::ensurePortMapping() {
     }
 }
 
-void NetworkCandy::uPnPHandler::deletePortMapping() {
+void NetworkCandy::uPnPHandler::mayDeletePortMapping() {
     if (_hasRedirect)
         this->_removeRedirect();
 }
@@ -212,7 +212,7 @@ bool NetworkCandy::uPnPHandler::_checkIfHasRedirect() {
         _urls.controlURL,
         _IGDData.first.servicetype,
         _targetPort.c_str(),
-        _PROTOCOL.c_str(),
+        PROTOCOL.c_str(),
         NULL /*remoteHost*/,
         intClient,
         intPort,
@@ -237,7 +237,7 @@ bool NetworkCandy::uPnPHandler::_checkIfHasRedirect() {
     // else, has redirect
     spdlog::info(
         "UPNP CheckRedirect : external {} : {}[{}] is redirected to internal {} : {} (duration={})",
-        _externalIPAddress, _targetPort, _PROTOCOL, intClient, intPort, duration
+        _externalIPAddress, _targetPort, PROTOCOL, intClient, intPort, duration
     );
     _hasRedirect = true;
     return true;
@@ -252,7 +252,7 @@ int NetworkCandy::uPnPHandler::_requestRedirection() {
             _targetPort.c_str(),
             _lanaddr,
             _description.c_str(),
-            _PROTOCOL.c_str(),
+            PROTOCOL.c_str(),
             NULL /*remoteHost*/,
             _LEASE_DURATION.c_str()
         );
@@ -285,7 +285,7 @@ bool NetworkCandy::uPnPHandler::_removeRedirect() {
         _urls.controlURL,
         _IGDData.first.servicetype,
         _targetPort.c_str(),
-        _PROTOCOL.c_str(),
+        PROTOCOL.c_str(),
         NULL /*remoteHost*/
     );
 

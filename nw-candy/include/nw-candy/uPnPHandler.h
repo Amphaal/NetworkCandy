@@ -37,17 +37,20 @@ class uPnPHandler {
     uPnPHandler(const std::string &portToMap, const std::string &serviceDescription);
 
     bool ensurePortMapping();  // returns if port mapping is set
-    void deletePortMapping();
+    void mayDeletePortMapping();
     ~uPnPHandler();
 
     const std::string externalIP() const;
+
+ protected:
+    static inline const std::string PROTOCOL = "TCP";
+    const std::string& portToMap() const;
 
  private:
     static constexpr int _IPv6 = 0; /* defaults to NO */
     static constexpr unsigned char _TTL = 2; /* defaulting to 2 */
     static constexpr int _LOCALPORT = UPNP_LOCAL_PORT_ANY;
     static constexpr int _DISCOVER_DELAY_MS = 2000;
-    static inline const std::string _PROTOCOL = "TCP";
     static inline const std::string _LEASE_DURATION = "0";  // infinite lease
 
     #ifdef _WIN32

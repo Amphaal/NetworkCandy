@@ -1,0 +1,57 @@
+#policies first
+if(COMMAND cmake_policy)
+    cmake_policy(SET CMP0076 NEW)
+endif()
+
+
+###################
+# delcare library #
+###################
+
+add_library(nw-candy STATIC)
+
+target_sources(nw-candy PRIVATE
+    src/uPnpHandler.cpp
+)
+
+target_include_directories(nw-candy
+    PRIVATE include/nw-candy
+    INTERFACE include
+)
+
+####################
+# Deps : miniupnpc #
+####################
+
+#find miniupnpc
+find_package(miniupnpc REQUIRED)
+
+#define
+add_library(miniupnpc INTERFACE)
+target_link_libraries(miniupnpc INTERFACE ${MINIUPNP_LIBRARY})
+target_include_directories(miniupnpc INTERFACE ${MINIUPNP_INCLUDE_DIR})
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    target_link_libraries(miniupnpc INTERFACE ws2_32)
+endif()
+
+#link
+target_link_libraries(nw-candy INTERFACE miniupnpc)
+
+#################
+# Deps : spdlog #
+#################
+
+if(NOT TARGET spdlog)
+    #find
+    find_package(spdlog REQUIRED)
+
+    #TODO temporary fix to https://github.com/msys2/MINGW-packages/issues/7284
+    target_compile_definitions(nw-candy PUBLIC 
+        SPDLOG_COMPILED_LIB
+        SPDLOG_FMT_EXTERNAL
+    )
+endif()
+
+#link
+target_link_libraries(nw-candy PRIVATE spdlog::spdlog)

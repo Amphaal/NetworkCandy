@@ -45,13 +45,7 @@ target_link_libraries(nw-candy INTERFACE miniupnpc)
 if(NOT TARGET spdlog)
     #find
     find_package(spdlog REQUIRED)
-
-    #TODO temporary fix to https://github.com/msys2/MINGW-packages/issues/7284
-    target_compile_definitions(nw-candy PUBLIC 
-        SPDLOG_COMPILED_LIB
-        SPDLOG_FMT_EXTERNAL
-    )
 endif()
 
 #link
-target_link_libraries(nw-candy PRIVATE spdlog::spdlog)
+target_link_libraries(nw-candy PUBLIC spdlog::spdlog)

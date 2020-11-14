@@ -41,6 +41,7 @@ class uPnPHandler {
     ~uPnPHandler();
 
     const std::string externalIP() const;
+    const std::string localIP() const;
 
  protected:
     static inline const std::string PROTOCOL = "TCP";
@@ -55,19 +56,20 @@ class uPnPHandler {
 
     #ifdef _WIN32
         WSADATA _wsaData;
-        WORD _requestedVersion = MAKEWORD(2, 2);
+        const WORD _requestedVersion = MAKEWORD(2, 2);
     #endif
 
     UPNPUrls _urls;
     IGDdatas _IGDData;
     bool _IGDFound = false;
     UPNPDev* _devicesList = nullptr;
-    char _lanaddr[64] = "unset"; /* my ip address on the LAN */
-    char _externalIPAddress[40] = "unset"; /* my ip address on the WAN */
     bool _hasRedirect = false;
 
-    std::string _description;
-    std::string _targetPort;
+    char _localIPAddress[64] = "unset"; /* my ip address on the LAN */
+    char _externalIPAddress[40] = "unset"; /* my ip address on the WAN */
+
+    const std::string _description;
+    const std::string _targetPort;
 
     // returns error code if any
     int _discoverDevices();

@@ -80,6 +80,10 @@ const std::string NetworkCandy::uPnPHandler::externalIP() const {
     return _externalIPAddress;
 }
 
+const std::string NetworkCandy::uPnPHandler::localIP() const {
+    return _localIPAddress;
+}
+
 // returns error code if any
 int NetworkCandy::uPnPHandler::_discoverDevices() {
     // not used
@@ -139,7 +143,7 @@ bool NetworkCandy::uPnPHandler::_getExternalIP() {
 bool NetworkCandy::uPnPHandler::_getValidIGD() {
     // request
     int result;
-    result = UPNP_GetValidIGD(_devicesList, &_urls, &_IGDData, _lanaddr, sizeof(_lanaddr));
+    result = UPNP_GetValidIGD(_devicesList, &_urls, &_IGDData, _localIPAddress, sizeof(_localIPAddress));
 
     // if no IGD found
     if(!result) return false;
@@ -161,7 +165,7 @@ bool NetworkCandy::uPnPHandler::_getValidIGD() {
             spdlog::info("UPNP Inst : Found device (igd ?) : {}", _urls.controlURL);
             spdlog::info("UPNP Inst : Trying to continue anyway");
     }
-    spdlog::info("UPNP Inst : Local LAN ip address {}", _lanaddr);
+    spdlog::info("UPNP Inst : Local LAN ip address {}", _localIPAddress);
 
     // succeeded !
     _IGDFound = true;
@@ -250,7 +254,7 @@ int NetworkCandy::uPnPHandler::_requestRedirection() {
             _IGDData.first.servicetype,
             _targetPort.c_str(),
             _targetPort.c_str(),
-            _lanaddr,
+            _localIPAddress,
             _description.c_str(),
             PROTOCOL.c_str(),
             NULL /*remoteHost*/,
@@ -268,7 +272,7 @@ int NetworkCandy::uPnPHandler::_requestRedirection() {
     if (result != UPNPCOMMAND_SUCCESS) {
         spdlog::info(
             "UPNP AskRedirect : AddPortMapping({},{}, {}) failed with code {} ({})",
-            _targetPort, _targetPort, _lanaddr, result, strupnperror(result)
+            _targetPort, _targetPort, _localIPAddress, result, strupnperror(result)
         );
         return result;
     }

@@ -76,7 +76,7 @@ bool NetworkCandy::ConnectivityManager::isConnectedToInternet() {
 void NetworkCandy::ConnectivityManager::initCOM() {
     {
         // start COM
-        auto result = CoInitialize(NULL);
+        auto result = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
         if(!SUCCEEDED(result)) throw std::runtime_error("COM could not start");
     }
 

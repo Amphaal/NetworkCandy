@@ -28,6 +28,8 @@ void _uPnPTest() {
 
 int main() {
     NetworkCandy::ConnectivityManager cm;
-    cm.startListening();
+    cm.initCOM();
+    cm.listenForConnectivityChanges();
+    cm.releaseCOM();
     return 0;
 }

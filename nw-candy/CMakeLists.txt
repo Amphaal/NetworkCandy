@@ -46,10 +46,10 @@ target_link_libraries(nw-candy INTERFACE miniupnpc)
 # Deps : spdlog #
 #################
 
-if(NOT TARGET spdlog)
-    #find
+#find
+if(NOT TARGET spdlog::spdlog)
     find_package(spdlog REQUIRED)
 endif()
 
 #link
-target_link_libraries(nw-candy PUBLIC spdlog::spdlog)
+target_link_libraries(nw-candy PRIVATE spdlog::spdlog)

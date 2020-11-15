@@ -63,7 +63,17 @@ STDMETHODIMP NetworkCandy::CMEventHandler::ConnectivityChanged(NLM_CONNECTIVITY 
     return S_OK;
 }
 
-NetworkCandy::ConnectivityManager::ConnectivityManager() {
+NetworkCandy::ConnectivityManager::ConnectivityManager() {}
+NetworkCandy::ConnectivityManager::~ConnectivityManager() {}
+
+bool NetworkCandy::ConnectivityManager::isConnectedToInternet() {
+    VARIANT_BOOL isConnectedToInternet;
+    auto result = _manager->IsConnectedToInternet(&isConnectedToInternet);
+    if(!SUCCEEDED(result)) throw std::runtime_error("Could not know if connected to internet");
+    return isConnectedToInternet;
+}
+
+void NetworkCandy::ConnectivityManager::initCOM() {
     {
         // start COM
         auto result = CoInitialize(NULL);
@@ -117,14 +127,16 @@ NetworkCandy::ConnectivityManager::ConnectivityManager() {
     }
 }
 
-bool NetworkCandy::ConnectivityManager::isConnectedToInternet() {
-    VARIANT_BOOL isConnectedToInternet;
-    auto result = _manager->IsConnectedToInternet(&isConnectedToInternet);
-    if(!SUCCEEDED(result)) throw std::runtime_error("Could not know if connected to internet");
-    return isConnectedToInternet;
+void NetworkCandy::ConnectivityManager::releaseCOM() {
+    this->Release();
+    _cp->Unadvise(_cookie);
+    _cp->Release();
+    _managerCPC->Release();
+    _manager->Release();
+    CoUninitialize();
 }
 
-void NetworkCandy::ConnectivityManager::startListening() {
+void NetworkCandy::ConnectivityManager::listenForConnectivityChanges() {
     BOOL bRet;
     MSG msg;
     while((bRet = GetMessage(&msg, NULL, 0, 0 )) != 0) {
@@ -132,15 +144,6 @@ void NetworkCandy::ConnectivityManager::startListening() {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
-}
-
-NetworkCandy::ConnectivityManager::~ConnectivityManager() {
-    this->Release();
-    _cp->Unadvise(_cookie);
-    _cp->Release();
-    _managerCPC->Release();
-    _manager->Release();
-    CoUninitialize();
 }
 
 void NetworkCandy::ConnectivityManager::_connectivityChanged(bool isConnectedToInternet) {

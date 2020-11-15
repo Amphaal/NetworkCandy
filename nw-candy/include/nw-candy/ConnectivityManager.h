@@ -50,7 +50,9 @@ class ConnectivityManager : private CMEventHandler {
 
     bool isConnectedToInternet();
 
-    void startListening();
+    void initCOM();
+    void listenForConnectivityChanges();
+    void releaseCOM();
 
  protected:
     void _connectivityChanged(bool isConnectedToInternet) override;

@@ -77,7 +77,12 @@ void NetworkCandy::ConnectivityManager::initCOM() {
     {
         // start COM
         auto result = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+
+        //
         if(!SUCCEEDED(result)) throw std::runtime_error("COM could not start");
+
+        //
+        spdlog::info("nw-candy : COM initialized...");
     }
 
     {
@@ -87,36 +92,53 @@ void NetworkCandy::ConnectivityManager::initCOM() {
             CLSCTX_ALL, IID_INetworkListManager,
             (LPVOID *)&_manager
         );
+
+        //
         if(!SUCCEEDED(result)) {
             CoUninitialize();
             throw std::runtime_error("Could not get NetworkListManager");
         }
+
+        //
+        spdlog::info("nw-candy : NetworkListManager fetched...");
     }
 
     {
         // get connection point container from manager
         auto result = _manager->QueryInterface(IID_IConnectionPointContainer, (void **)&_managerCPC);
+
+        //
         if(!SUCCEEDED(result)) {
             _manager->Release();
             CoUninitialize();
             throw std::runtime_error("Could not get ConnectionPointContainer from NetworkListManager");
         }
+
+        //
+        spdlog::info("nw-candy : ConnectionPointContainer fetched...");
     }
 
     {
         // get connection point
         auto result = _managerCPC->FindConnectionPoint(IID_INetworkListManagerEvents, &_cp);
+
+        //
         if(!SUCCEEDED(result)) {
             _managerCPC->Release();
             _manager->Release();
             CoUninitialize();
             throw std::runtime_error("Could not get ConnectionPoint");
         }
+
+        //
+        spdlog::info("nw-candy : ConnectionPoint found...");
     }
 
     {
         // bind advisor to sink
         auto result = _cp->Advise((IUnknown*)this, &_cookie);
+
+        //
         if(!SUCCEEDED(result)) {
             _cp->Release();
             _managerCPC->Release();
@@ -124,24 +146,39 @@ void NetworkCandy::ConnectivityManager::initCOM() {
             CoUninitialize();
             throw std::runtime_error("Could not bind advisor to sink");
         }
+
+        //
+        spdlog::info("nw-candy : Sink bound... OK!");
     }
 }
 
 void NetworkCandy::ConnectivityManager::releaseCOM() {
+    //
+    spdlog::info("nw-candy : Releasing COM...");
+
     this->Release();
     _cp->Unadvise(_cookie);
     _cp->Release();
     _managerCPC->Release();
     _manager->Release();
     CoUninitialize();
+
+    //
+    spdlog::info("nw-candy : Releasing COM OK!");
 }
 
 void NetworkCandy::ConnectivityManager::listenForConnectivityChanges() {
-    _listen = true;
     MSG msg;
-    while(_listen && GetMessage(&msg, NULL, 0, 0 )) {
+    while(GetMessage(&msg, NULL, 0, 0 )) {
+        //
+        spdlog::info("nw-candy : COM message received! translating and dispatching...");
+
+        //
         TranslateMessage(&msg);
         DispatchMessage(&msg);
+
+        //
+        spdlog::info("nw-candy : COM message Dispatched !");
     }
 }
 

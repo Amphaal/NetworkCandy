@@ -1,2 +1,2 @@
 add_executable(tests tests.cpp)
-target_link_libraries(tests PRIVATE nw-candy)
+target_link_libraries(tests PRIVATE nw-candy ole32)

@@ -12,12 +12,16 @@ add_library(nw-candy STATIC)
 
 target_sources(nw-candy PRIVATE
     src/uPnpHandler.cpp
+    src/ConnectivityManager.cpp
 )
 
 target_include_directories(nw-candy
     PRIVATE include/nw-candy
     INTERFACE include
 )
+
+# link
+target_link_libraries(nw-candy PRIVATE ole32)
 
 ####################
 # Deps : miniupnpc #

@@ -38,6 +38,7 @@ class CMEventHandler : public INetworkListManagerEvents {
     virtual void _connectivityChanged(bool isConnectedToInternet) = 0;
 
  private:
+    bool _hasProcessed = false;
     bool _bInternet = false;
     ULONG m_lRefCnt;
     DWORD m_dwCookie;
@@ -56,7 +57,6 @@ class ConnectivityManager : private CMEventHandler {
 
  protected:
     void _connectivityChanged(bool isConnectedToInternet) override;
-    bool _listen = false;
 
  private:
     INetworkListManager* _manager = nullptr;

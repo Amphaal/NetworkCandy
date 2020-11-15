@@ -54,9 +54,10 @@ STDMETHODIMP NetworkCandy::CMEventHandler::ConnectivityChanged(NLM_CONNECTIVITY 
                     || (NewConnectivity & NLM_CONNECTIVITY_IPV4_INTERNET);
 
     //
-    if (isConnected != _bInternet) {
+    if (_hasProcessed || isConnected != _bInternet) {
         _bInternet = isConnected;
         _connectivityChanged(isConnected);
+        _hasProcessed = true;
     }
 
     //
@@ -169,7 +170,14 @@ void NetworkCandy::ConnectivityManager::releaseCOM() {
 
 void NetworkCandy::ConnectivityManager::listenForConnectivityChanges() {
     MSG msg;
-    while(GetMessage(&msg, NULL, 0, 0 )) {
+    WINBOOL bRet;
+    while((bRet = GetMessage(&msg, NULL, 0, 0 )) != 0) {
+        //
+        if (bRet == -1) {
+            spdlog::info("nw-candy : STOP message received, listening end.");
+            break;
+        }
+
         //
         spdlog::info("nw-candy : COM message received! translating and dispatching...");
 

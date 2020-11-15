@@ -179,9 +179,6 @@ void NetworkCandy::ConnectivityManager::listenForConnectivityChanges() {
         }
 
         //
-        spdlog::info("nw-candy : COM message received! translating and dispatching...");
-
-        //
         TranslateMessage(&msg);
         DispatchMessage(&msg);
 

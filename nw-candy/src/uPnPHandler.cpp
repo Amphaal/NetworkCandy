@@ -84,6 +84,10 @@ const std::string NetworkCandy::uPnPHandler::localIP() const {
     return _localIPAddress;
 }
 
+const std::string& NetworkCandy::uPnPHandler::portToMap() const {
+    return _targetPort;
+}
+
 // returns error code if any
 int NetworkCandy::uPnPHandler::_discoverDevices() {
     // not used

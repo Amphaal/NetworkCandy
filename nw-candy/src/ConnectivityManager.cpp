@@ -50,14 +50,11 @@ STDMETHODIMP_(ULONG) NetworkCandy::CMEventHandler::Release() {
 }
 STDMETHODIMP NetworkCandy::CMEventHandler::ConnectivityChanged(NLM_CONNECTIVITY NewConnectivity) {
     //
-    spdlog::info("nw-candy : ConnectivityChanged !");
-
-    //
     auto isConnected = (NewConnectivity & NLM_CONNECTIVITY_IPV6_INTERNET)
                     || (NewConnectivity & NLM_CONNECTIVITY_IPV4_INTERNET);
 
     //
-    if (_hasProcessed || isConnected != _bInternet) {
+    if (!_hasProcessed || isConnected != _bInternet) {
         _bInternet = isConnected;
         _connectivityChanged(isConnected);
         _hasProcessed = true;

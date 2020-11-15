@@ -137,10 +137,9 @@ void NetworkCandy::ConnectivityManager::releaseCOM() {
 }
 
 void NetworkCandy::ConnectivityManager::listenForConnectivityChanges() {
-    BOOL bRet;
+    _listen = true;
     MSG msg;
-    while((bRet = GetMessage(&msg, NULL, 0, 0 )) != 0) {
-        if (bRet == -1) break;
+    while(_listen && GetMessage(&msg, NULL, 0, 0 )) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }

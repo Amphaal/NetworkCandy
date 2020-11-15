@@ -56,6 +56,7 @@ class ConnectivityManager : private CMEventHandler {
 
  protected:
     void _connectivityChanged(bool isConnectedToInternet) override;
+    bool _listen = false;
 
  private:
     INetworkListManager* _manager = nullptr;

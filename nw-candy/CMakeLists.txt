@@ -49,6 +49,10 @@ target_link_libraries(nw-candy INTERFACE miniupnpc)
 #find
 if(NOT TARGET spdlog::spdlog)
     find_package(spdlog REQUIRED)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND MINGW)
+        # https://github.com/msys2/MINGW-packages/issues/6855
+        target_link_options(spdlog::spdlog INTERFACE "-Wl,/force:multiple")
+    endif()
 endif()
 
 #link

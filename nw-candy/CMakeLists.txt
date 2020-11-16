@@ -56,4 +56,4 @@ if(NOT TARGET spdlog::spdlog)
 endif()
 
 #link
-target_link_libraries(nw-candy PRIVATE spdlog::spdlog)
+target_link_libraries(nw-candy PUBLIC spdlog::spdlog)

@@ -11,7 +11,7 @@ endif()
 add_library(nw-candy STATIC)
 
 target_sources(nw-candy PRIVATE
-    src/uPnpHandler.cpp
+    src/uPnPHandler.cpp
     src/ConnectivityManager.cpp
 )
 

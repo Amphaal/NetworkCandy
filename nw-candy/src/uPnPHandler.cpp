@@ -34,16 +34,9 @@ bool NetworkCandy::uPnPHandler::ensurePortMapping() {
         auto initOK = this->_initUPnP();
         if (!initOK) return false;
 
-        // use impl
-        if(!_impl) {
-            _impl = new IDGv1Forwarder(
-                _targetPort,
-                PROTOCOL,
-                _urls.controlURL,
-                _IGDData.first.servicetype,
-                _description.c_str()
-            );
-        }
+        // use appropriate implementation
+        if(!_impl) 
+            _impl = _createAppropriateIGDImplementation();
         
         // check if has redirection already done
         auto errCode = _impl->portforwardExists(&_hasRedirect);
@@ -60,6 +53,28 @@ bool NetworkCandy::uPnPHandler::ensurePortMapping() {
     }
     
     return _hasRedirect;
+}
+
+uPnPForwarderImpl* NetworkCandy::uPnPHandler::_createAppropriateIGDImplementation() {
+    // assume hole punching is available ?
+    auto &FC_st = _IGDData.IPv6FC.servicetype;
+    if(FC_st[0] != '\0') {
+        return new IDGv2Forwarder(
+            _targetPort,
+            PROTOCOL,
+            _urls.controlURL,
+            FC_st
+        );
+    }
+
+    // use default impl
+    return new IDGv1Forwarder(
+        _targetPort,
+        PROTOCOL,
+        _urls.controlURL,
+        _IGDData.first.servicetype,
+        _description.c_str()
+    );
 }
 
 void NetworkCandy::uPnPHandler::mayDeletePortMapping() {
@@ -193,12 +208,10 @@ bool NetworkCandy::uPnPHandler::_initUPnP() {
         }
     #endif
 
-    /* discover devices IDG:1 */
+    /* discover devices from IPv4 */
     if (_discoverDevices(false) != 0) {
-        /* discover devices IDG:2 */
-        if(_discoverDevices(true) == 0) {
-            _assumeIGDv2 = true;
-        } else {
+        /* discover devices IPv6 */
+        if(_discoverDevices(true) != 0) {
             // fails !
             spdlog::info("UPNP Inst : No IGD UPnP Device found on the network !");
             return false;

@@ -53,8 +53,8 @@ class uPnPHandler {
     static constexpr int _DISCOVER_DELAY_MS = 2000;
     static inline const char * _LEASE_DURATION = "0";  // infinite lease
 
+    uPnPForwarderImpl* _createAppropriateIGDImplementation();
     uPnPForwarderImpl* _impl = nullptr;
-    bool _assumeIGDv2 = false;
 
     #ifdef _WIN32
         WSADATA _wsaData;

@@ -19,5 +19,22 @@
 
 #include "uPnPForwarder.h"
 
-uPnPForwarderImpl::uPnPForwarderImpl(const std::string& port, const std::string& PROTOCOL, const char * controlURL, const char * servicetype) : 
-    _portToForward(port), _protocol(PROTOCOL), _controlURL(controlURL), _servicetype(servicetype) { }
+#include <spdlog/spdlog.h>
+
+#include <miniupnpc/upnpcommands.h>
+#include <miniupnpc/upnperrors.h>
+
+IDGv2Forwarder::IDGv2Forwarder(const std::string& port, const std::string& PROTOCOL, const char * controlURL, const char * servicetype) : 
+    uPnPForwarderImpl(port, PROTOCOL, controlURL, servicetype) { }
+
+int IDGv2Forwarder::portforwardExists(bool* isForwarded) {   
+    throw std::logic_error("Unimplemented !");
+}
+
+int IDGv2Forwarder::portforward(bool* isForwarded, const char* localIp, const char* leaseTime) { 
+    throw std::logic_error("Unimplemented !");
+}
+
+int IDGv2Forwarder::removePortforward(bool* isForwarded) {
+    throw std::logic_error("Unimplemented !");
+}

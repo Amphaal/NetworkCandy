@@ -28,8 +28,8 @@ class uPnPForwarderImpl {
     // returns error code if any
     virtual int portforwardExists(bool* isForwarded) = 0;
     
-    // returns error code if any
-    virtual int portforward(bool* isForwarded, const char* localIp, const char* leaseTime = "0") = 0;
+    // returns error code if any, defaults leaseTime to 12 hours
+    virtual int portforward(bool* isForwarded, const char* localIp, const char* leaseTime = "43200") = 0;
 
     // returns error code if any
     virtual int removePortforward(bool* isForwarded) = 0;
@@ -60,4 +60,7 @@ class IDGv2Forwarder : public uPnPForwarderImpl {
     int portforwardExists(bool* isForwarded) final;
     int portforward(bool* isForwarded, const char* localIp, const char* leaseTime) final;
     int removePortforward(bool* isForwarded) final;
+ 
+ private:
+    char _wp_id[16] = "\0";
 };

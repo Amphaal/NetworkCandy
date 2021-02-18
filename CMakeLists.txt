@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10.2) #stick to 18.04 Ubuntu LTS version
 
 project(NetworkCandy
-    VERSION 0.0.1
+    VERSION 0.1.0
     DESCRIPTION "Network system notifications and uPnP shenanigans"
     HOMEPAGE_URL "https://github.com/Amphaal/NetworkCandy"
     LANGUAGES CXX

@@ -27,14 +27,69 @@
 IDGv2Forwarder::IDGv2Forwarder(const std::string& port, const std::string& PROTOCOL, const char * controlURL, const char * servicetype) : 
     uPnPForwarderImpl(port, PROTOCOL, controlURL, servicetype) { }
 
-int IDGv2Forwarder::portforwardExists(bool* isForwarded) {   
-    throw std::logic_error("Unimplemented !");
+int IDGv2Forwarder::portforwardExists(bool* isForwarded) {
+    // always go for pinholing
+    *isForwarded = false;
+    return 0;
 }
 
-int IDGv2Forwarder::portforward(bool* isForwarded, const char* localIp, const char* leaseTime) { 
-    throw std::logic_error("Unimplemented !");
+int IDGv2Forwarder::portforward(bool* isForwarded, const char* localIp, const char* leaseTime) {    
+    auto result = UPNP_AddPinhole(
+        _controlURL, 
+        _servicetype, 
+        "*",
+        _portToForward.c_str(),
+        localIp,
+        _portToForward.c_str(),
+        _protocol.c_str(),
+        leaseTime,
+        _wp_id
+    );
+
+    // if firewall is disabled, portforwarding is not
+    if (result == 702) {
+        spdlog::warn("UPNP AskRedirect : UPNP_AddPinhole failed on 702 error : since firewall is not active, no problem !");
+        *isForwarded = true;
+        return 0;
+    }
+
+    // check if error
+    else if (result != UPNPCOMMAND_SUCCESS) {
+        spdlog::info(
+            "UPNP AskRedirect : UPNP_AddPinhole({}, {}) failed with code {} ({})",
+            _portToForward, localIp, result, strupnperror(result)
+        );
+        return result;
+    }
+
+    // success !
+    *isForwarded = true;
+    return 0;
 }
 
 int IDGv2Forwarder::removePortforward(bool* isForwarded) {
-    throw std::logic_error("Unimplemented !");
+    //
+    if(_wp_id[0] == '\0') {
+        spdlog::info("UPNP RemoveRedirect : UPNP_DeletePinhole() cannot be called since no pinhole ID is registered !");
+        return -999;
+    } 
+
+    //
+    auto result = UPNP_DeletePinhole(
+        _controlURL,
+        _servicetype,
+        _wp_id
+    );
+
+    // check error
+    if (result != UPNPCOMMAND_SUCCESS) {
+        spdlog::info("UPNP RemoveRedirect : UPNP_DeletePinhole() failed with code :{}", result);
+        return result;
+    }
+
+    // success
+    spdlog::info("UPNP RemoveRedirect : UPNP_DeletePinhole() succeeded !");
+    *isForwarded = false;
+
+    return 0;
 }

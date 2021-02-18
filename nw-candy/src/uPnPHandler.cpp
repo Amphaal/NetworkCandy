@@ -62,7 +62,7 @@ uPnPForwarderImpl* NetworkCandy::uPnPHandler::_createAppropriateIGDImplementatio
         return new IDGv2Forwarder(
             _targetPort,
             PROTOCOL,
-            _urls.controlURL,
+            _urls.controlURL_6FC,
             FC_st
         );
     }

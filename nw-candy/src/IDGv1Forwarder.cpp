@@ -71,16 +71,16 @@ int IDGv1Forwarder::portforwardExists(bool* isForwarded) {
 
 int IDGv1Forwarder::portforward(bool* isForwarded, const char* localIp, const char* leaseTime) {
     auto result = UPNP_AddPortMapping(
-            _controlURL,
-            _servicetype,
-            _portToForward.c_str(),
-            _portToForward.c_str(),
-            localIp,
-            _description,
-            _protocol.c_str(),
-            NULL /*remoteHost*/,
-            leaseTime
-        );
+        _controlURL,
+        _servicetype,
+        _portToForward.c_str(),
+        _portToForward.c_str(),
+        localIp,
+        _description,
+        _protocol.c_str(),
+        NULL /*remoteHost*/,
+        leaseTime
+    );
 
     // Action failed, most possibly on already existing mapping
     if (result == 501) {

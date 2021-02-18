@@ -24,6 +24,7 @@
 class uPnPForwarderImpl {
  public:
     uPnPForwarderImpl(const std::string& port, const std::string& PROTOCOL, const char * controlURL, const char * servicetype);
+    virtual ~uPnPForwarderImpl() = 0;
 
     // returns error code if any
     virtual int portforwardExists(bool* isForwarded) = 0;

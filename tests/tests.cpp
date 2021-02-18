@@ -18,18 +18,17 @@
 // different license and copyright still refer to this GPL.
 
 #include <nw-candy/uPnPHandler.h>
-#include <nw-candy/ConnectivityManager.h>
-
-void _uPnPTest() {
+int main() {
     NetworkCandy::uPnPHandler uPnPHandler("31137", "RPGRPZ");
     uPnPHandler.ensurePortMapping();
     uPnPHandler.mayDeletePortMapping();
 }
 
-int main() {
-    NetworkCandy::ConnectivityManager cm;
-    cm.initCOM();
-    cm.listenForConnectivityChanges();
-    cm.releaseCOM();
-    return 0;
-}
+// #include <nw-candy/ConnectivityManager.h>
+// int main() {
+//     NetworkCandy::ConnectivityManager cm;
+//     cm.initCOM();
+//     cm.listenForConnectivityChanges();
+//     cm.releaseCOM();
+//     return 0;
+// }

@@ -25,10 +25,10 @@
 #endif
 
 #include <miniupnpc/miniupnpc.h>
-#include <miniupnpc/upnpcommands.h>
-#include <miniupnpc/upnperrors.h>
 
 #include <string>
+
+#include "uPnPForwarder.h"
 
 namespace NetworkCandy {
 
@@ -48,11 +48,13 @@ class uPnPHandler {
     const std::string& portToMap() const;
 
  private:
-    static constexpr int _IPv6 = 0; /* defaults to NO */
     static constexpr unsigned char _TTL = 2; /* defaulting to 2 */
     static constexpr int _LOCALPORT = UPNP_LOCAL_PORT_ANY;
     static constexpr int _DISCOVER_DELAY_MS = 2000;
-    static inline const std::string _LEASE_DURATION = "0";  // infinite lease
+    static inline const char * _LEASE_DURATION = "0";  // infinite lease
+
+    uPnPForwarderImpl* _impl = nullptr;
+    bool _assumeIGDv2 = false;
 
     #ifdef _WIN32
         WSADATA _wsaData;
@@ -63,6 +65,7 @@ class uPnPHandler {
     IGDdatas _IGDData;
     bool _IGDFound = false;
     UPNPDev* _devicesList = nullptr;
+    
     bool _hasRedirect = false;
 
     char _localIPAddress[64] = "unset"; /* my ip address on the LAN */
@@ -72,7 +75,7 @@ class uPnPHandler {
     const std::string _targetPort;
 
     // returns error code if any
-    int _discoverDevices();
+    int _discoverDevices(bool useIpV6);
 
     // returns if succeeded
     bool _getExternalIP();
@@ -82,15 +85,6 @@ class uPnPHandler {
 
     // returns if succeeded
     bool _initUPnP();
-
-    // returns if request succeeded
-    bool _checkIfHasRedirect();
-
-    // return error code if any
-    int _requestRedirection();
-
-    // returns if request succeeded
-    bool _removeRedirect();
 };
 
 }  // namespace NetworkCandy

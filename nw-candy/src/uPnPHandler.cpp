@@ -21,6 +21,9 @@
 
 #include <spdlog/spdlog.h>
 
+#include <miniupnpc/upnpcommands.h>
+#include <miniupnpc/upnperrors.h>
+
 NetworkCandy::uPnPHandler::uPnPHandler(const std::string &portToMap, const std::string &serviceDescription) :
     _targetPort(portToMap), _description(serviceDescription) {}
 
@@ -29,40 +32,40 @@ bool NetworkCandy::uPnPHandler::ensurePortMapping() {
     try {
         // init uPnP...
         auto initOK = this->_initUPnP();
-        if (!initOK) {
-            return false;
-        }
+        if (!initOK) return false;
 
+        // use impl
+        if(!_impl) {
+            _impl = new IDGv1Forwarder(
+                _targetPort,
+                PROTOCOL,
+                _urls.controlURL,
+                _IGDData.first.servicetype,
+                _description.c_str()
+            );
+        }
+        
         // check if has redirection already done
-        auto checkSuccess = _checkIfHasRedirect();
-        if (!checkSuccess) {
-            return false;
-        }
+        auto errCode = _impl->portforwardExists(&_hasRedirect);
+        if (errCode) return false;
+        if (_hasRedirect) return true;
 
-        // if has no redirection already
-        if(!_hasRedirect) {
-            // do ask redirection
-            auto redirectResult = this->_requestRedirection();
+        // no redirection set, try to ask for one
+        auto redirectCode = _impl->portforward(&_hasRedirect, _localIPAddress);
+        if (redirectCode) return false;
 
-            // handle error
-            if (redirectResult != 0) {
-                return false;
-            }
-        }
-
-        // success !
-        return true;
-
-    // on exception
     } catch(...) {
+        // log on exception
         spdlog::warn("UPNP run : exception caught while processing");
-        return false;
     }
+    
+    return _hasRedirect;
 }
 
 void NetworkCandy::uPnPHandler::mayDeletePortMapping() {
-    if (_hasRedirect)
-        this->_removeRedirect();
+    if (_hasRedirect && _impl) {
+        this->_impl->removePortforward(&_hasRedirect);
+    }  
 }
 
 NetworkCandy::uPnPHandler::~uPnPHandler() {
@@ -74,6 +77,9 @@ NetworkCandy::uPnPHandler::~uPnPHandler() {
     #ifdef _WIN32
         WSACleanup();
     #endif
+
+    //
+    if(_impl) delete _impl;
 }
 
 const std::string NetworkCandy::uPnPHandler::externalIP() const {
@@ -89,7 +95,7 @@ const std::string& NetworkCandy::uPnPHandler::portToMap() const {
 }
 
 // returns error code if any
-int NetworkCandy::uPnPHandler::_discoverDevices() {
+int NetworkCandy::uPnPHandler::_discoverDevices(bool useIpV6) {
     // not used
     char* _multicastif = nullptr;
     char* _minissdpdpath = nullptr;
@@ -101,7 +107,7 @@ int NetworkCandy::uPnPHandler::_discoverDevices() {
         _multicastif,
         _minissdpdpath,
         _LOCALPORT,
-        _IPv6,
+        useIpV6,
         _TTL,
         &error
     );
@@ -187,10 +193,16 @@ bool NetworkCandy::uPnPHandler::_initUPnP() {
         }
     #endif
 
-    /* discover devices */
-    if (_discoverDevices() != 0) {
-        spdlog::info("UPNP Inst : No IGD UPnP Device found on the network !");
-        return false;
+    /* discover devices IDG:1 */
+    if (_discoverDevices(false) != 0) {
+        /* discover devices IDG:2 */
+        if(_discoverDevices(true) == 0) {
+            _assumeIGDv2 = true;
+        } else {
+            // fails !
+            spdlog::info("UPNP Inst : No IGD UPnP Device found on the network !");
+            return false;
+        }
     }
 
     /* get IGD */
@@ -205,106 +217,5 @@ bool NetworkCandy::uPnPHandler::_initUPnP() {
     }
 
     // succeeded !
-    return true;
-}
-
-// returns if request succeeded
-bool NetworkCandy::uPnPHandler::_checkIfHasRedirect() {
-    // getter args
-    char intClient[40];
-    char intPort[6];
-    char duration[16];
-
-    // request
-    auto result = UPNP_GetSpecificPortMappingEntry(
-        _urls.controlURL,
-        _IGDData.first.servicetype,
-        _targetPort.c_str(),
-        PROTOCOL.c_str(),
-        NULL /*remoteHost*/,
-        intClient,
-        intPort,
-        NULL /*desc*/,
-        NULL /*enabled*/,
-        duration
-    );
-
-    // no redirect acked
-    if(result == 714) {
-        spdlog::info("UPNP CheckRedirect : GetSpecificPortMappingEntry() found no existing entry");
-        _hasRedirect = false;
-        return true;
-    }
-
-    // if any code
-    if (result != UPNPCOMMAND_SUCCESS) {
-        spdlog::info("UPNP CheckRedirect : GetSpecificPortMappingEntry() failed with code {} ({})", result, strupnperror(result));
-        return false;
-    }
-
-    // else, has redirect
-    spdlog::info(
-        "UPNP CheckRedirect : external {} : {}[{}] is redirected to internal {} : {} (duration={})",
-        _externalIPAddress, _targetPort, PROTOCOL, intClient, intPort, duration
-    );
-    _hasRedirect = true;
-    return true;
-}
-
-// return error code if any
-int NetworkCandy::uPnPHandler::_requestRedirection() {
-    auto result = UPNP_AddPortMapping(
-            _urls.controlURL,
-            _IGDData.first.servicetype,
-            _targetPort.c_str(),
-            _targetPort.c_str(),
-            _localIPAddress,
-            _description.c_str(),
-            PROTOCOL.c_str(),
-            NULL /*remoteHost*/,
-            _LEASE_DURATION.c_str()
-        );
-
-    // Action failed, most possibly on already existing mapping
-    if (result == 501) {
-        spdlog::warn("UPNP AskRedirect : AddPortMapping failed on 501 error, but considering that mapping already exist");
-        _hasRedirect = true;
-        return 0;
-    }
-
-    // check if error
-    if (result != UPNPCOMMAND_SUCCESS) {
-        spdlog::info(
-            "UPNP AskRedirect : AddPortMapping({},{}, {}) failed with code {} ({})",
-            _targetPort, _targetPort, _localIPAddress, result, strupnperror(result)
-        );
-        return result;
-    }
-
-    // success !
-    _hasRedirect = true;
-    return 0;
-}
-
-// returns if request succeeded
-bool NetworkCandy::uPnPHandler::_removeRedirect() {
-    // request
-    auto result = UPNP_DeletePortMapping(
-        _urls.controlURL,
-        _IGDData.first.servicetype,
-        _targetPort.c_str(),
-        PROTOCOL.c_str(),
-        NULL /*remoteHost*/
-    );
-
-    // check error
-    if (result != UPNPCOMMAND_SUCCESS) {
-        spdlog::info("UPNP RemoveRedirect : UPNP_DeletePortMapping() failed with code :{}", result);
-        return false;
-    }
-
-    // success
-    spdlog::info("UPNP RemoveRedirect : UPNP_DeletePortMapping() succeeded !");
-    _hasRedirect = false;
     return true;
 }

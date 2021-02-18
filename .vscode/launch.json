@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(Windows) Launch",
+            "name": "(Windows) Launch Tests",
             "preLaunchTask": "2. Build",
             "type": "cppdbg",
             "request": "launch",

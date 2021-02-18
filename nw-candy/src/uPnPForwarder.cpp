@@ -21,3 +21,5 @@
 
 uPnPForwarderImpl::uPnPForwarderImpl(const std::string& port, const std::string& PROTOCOL, const char * controlURL, const char * servicetype) : 
     _portToForward(port), _protocol(PROTOCOL), _controlURL(controlURL), _servicetype(servicetype) { }
+
+uPnPForwarderImpl::~uPnPForwarderImpl() {}

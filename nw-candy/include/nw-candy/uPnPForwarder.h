@@ -45,6 +45,7 @@ class uPnPForwarderImpl {
 class IDGv1Forwarder : public uPnPForwarderImpl {
  public:
     IDGv1Forwarder(const std::string& port, const std::string& PROTOCOL, const char * controlURL, const char * servicetype, const char * description);
+    ~IDGv1Forwarder();
 
     int portforwardExists(bool* isForwarded) final;
     int portforward(bool* isForwarded, const char* localIp, const char* leaseTime) final;
@@ -57,6 +58,7 @@ class IDGv1Forwarder : public uPnPForwarderImpl {
 class IDGv2Forwarder : public uPnPForwarderImpl {
  public:
     IDGv2Forwarder(const std::string& port, const std::string& PROTOCOL, const char * controlURL, const char * servicetype);
+    ~IDGv2Forwarder();
 
     int portforwardExists(bool* isForwarded) final;
     int portforward(bool* isForwarded, const char* localIp, const char* leaseTime) final;

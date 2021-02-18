@@ -27,6 +27,8 @@
 IDGv1Forwarder::IDGv1Forwarder(const std::string& port, const std::string& PROTOCOL, const char * controlURL, const char * servicetype, const char * description) : 
     uPnPForwarderImpl(port, PROTOCOL, controlURL, servicetype), _description(description) { }
 
+IDGv1Forwarder::~IDGv1Forwarder() {}
+
 int IDGv1Forwarder::portforwardExists(bool* isForwarded) {
     // getter args
     char intClient[40];

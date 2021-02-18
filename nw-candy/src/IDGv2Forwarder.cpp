@@ -27,6 +27,8 @@
 IDGv2Forwarder::IDGv2Forwarder(const std::string& port, const std::string& PROTOCOL, const char * controlURL, const char * servicetype) : 
     uPnPForwarderImpl(port, PROTOCOL, controlURL, servicetype) { }
 
+IDGv2Forwarder::~IDGv2Forwarder() {}
+
 int IDGv2Forwarder::portforwardExists(bool* isForwarded) {
     // always go for pinholing
     *isForwarded = false;

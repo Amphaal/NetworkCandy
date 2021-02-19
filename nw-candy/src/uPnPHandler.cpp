@@ -59,6 +59,7 @@ uPnPForwarderImpl* NetworkCandy::uPnPHandler::_createAppropriateIGDImplementatio
     // assume hole punching is available ?
     auto &FC_st = _IGDData.IPv6FC.servicetype;
     if(FC_st[0] != '\0') {
+        spdlog::info("UPNP run : FirewallControl service existing, trying IDGv2 implementation.");
         return new IDGv2Forwarder(
             _targetPort,
             PROTOCOL,
@@ -68,6 +69,7 @@ uPnPForwarderImpl* NetworkCandy::uPnPHandler::_createAppropriateIGDImplementatio
     }
 
     // use default impl
+    spdlog::info("UPNP run : no FirewallControl service found, using IDGv1 implementation.");
     return new IDGv1Forwarder(
         _targetPort,
         PROTOCOL,

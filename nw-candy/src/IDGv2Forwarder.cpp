@@ -50,7 +50,7 @@ int IDGv2Forwarder::portforward(bool* isForwarded, const char* localIp, const ch
 
     // if firewall is disabled, portforwarding is not
     if (result == 702) {
-        spdlog::warn("UPNP AskRedirect : UPNP_AddPinhole failed on 702 error : since firewall is not active, no problem !");
+        spdlog::warn("UPNP AskRedirect : UPNP_AddPinhole() failed on 702 error : since firewall is not active, no problem !");
         *isForwarded = true;
         return 0;
     }

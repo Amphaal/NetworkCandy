@@ -86,7 +86,7 @@ int IDGv1Forwarder::portforward(bool* isForwarded, const char* localIp, const ch
 
     // Action failed, most possibly on already existing mapping
     if (result == 501) {
-        spdlog::warn("UPNP AskRedirect : AddPortMapping failed on 501 error, but considering that mapping already exist");
+        spdlog::warn("UPNP AskRedirect : AddPortMapping() failed on 501 error, but considering that mapping already exist");
         *isForwarded = true;
         return 0;
     }

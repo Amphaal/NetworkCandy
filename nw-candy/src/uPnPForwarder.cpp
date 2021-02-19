@@ -19,7 +19,11 @@
 
 #include "uPnPForwarder.h"
 
+#include <spdlog/spdlog.h>
+
 uPnPForwarderImpl::uPnPForwarderImpl(const std::string& port, const std::string& PROTOCOL, const char * controlURL, const char * servicetype) : 
-    _portToForward(port), _protocol(PROTOCOL), _controlURL(controlURL), _servicetype(servicetype) { }
+    _portToForward(port), _protocol(PROTOCOL), _controlURL(controlURL), _servicetype(servicetype) { 
+    spdlog::info("UPNP run : using parameters for forwarder : {}, {}, {}, {}", _portToForward, _protocol, _controlURL, _servicetype);
+}
 
 uPnPForwarderImpl::~uPnPForwarderImpl() {}

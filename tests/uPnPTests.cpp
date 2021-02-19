@@ -21,7 +21,7 @@
 #include <iostream>
 
 int main() {
-    NetworkCandy::uPnPHandler uPnPHandler("31137", "RPGRPZ");
+    NetworkCandy::uPnPHandler uPnPHandler("31137", "uPnPTests");
     uPnPHandler.ensurePortMapping();
     uPnPHandler.mayDeletePortMapping();
     std::cout << "Press Enter to end\n";

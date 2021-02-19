@@ -29,6 +29,10 @@ NetworkCandy::uPnPHandler::uPnPHandler(const std::string &portToMap, const std::
 
 // returns if port mapping is set
 bool NetworkCandy::uPnPHandler::ensurePortMapping() {
+    //
+    spdlog::info("UPNP run : Starting uPnP port mapping on port {} for [{}] ...", _targetPort, _description);
+
+    //
     try {
         // init uPnP...
         auto initOK = this->_initUPnP();
@@ -126,6 +130,7 @@ int NetworkCandy::uPnPHandler::_discoverDevices(bool useIpV6, const char * proto
     char* _minissdpdpath = nullptr;
 
     // discover
+    spdlog::info("UPNP Inst : starting discovery {}...", protocolDescr);
     int error;
     _devicesList = upnpDiscover(
         _DISCOVER_DELAY_MS,
@@ -137,16 +142,23 @@ int NetworkCandy::uPnPHandler::_discoverDevices(bool useIpV6, const char * proto
         &error
     );
 
-    // if not devices found...
-    if(!_devicesList) {
+    // if error
+    if(error) {
         spdlog::info("UPNP Inst : upnpDiscover() {} error code= {}", protocolDescr, error);
         return error;
     }
 
+    // if not devices found, most probably a timeout
+    if(!_devicesList) {
+        spdlog::info("UPNP Inst : upnpDiscover() {} has most probably timed out, no devices found !", protocolDescr);
+        return -998;
+    }
+
     // iterate through devices discovered
     UPNPDev* device;
-    spdlog::info("UPNP Inst : List of UPNP devices {} found on the network :", protocolDescr);
+    spdlog::info("UPNP Inst : List of {} UPNP devices found on the network :", protocolDescr);
     for (device = _devicesList; device; device = device->pNext) {
+        // log each
         spdlog::info("UPNP Inst : -> desc: {} st: {}", device->descURL, device->st);
     }
 
@@ -177,6 +189,7 @@ bool NetworkCandy::uPnPHandler::_getExternalIP() {
 // returns if succeeded
 bool NetworkCandy::uPnPHandler::_getValidIGD() {
     // request
+    spdlog::info("UPNP Inst : Fetching UPNP Internet Gateway Devices...");
     auto result = UPNP_GetValidIGD(
         _devicesList, 
         &_urls, 
@@ -188,7 +201,7 @@ bool NetworkCandy::uPnPHandler::_getValidIGD() {
     // handle returns
     switch (result) {
         case 0: {
-            spdlog::info("UPNP Inst : No valid UPNP Internet Gateway Device found");
+            spdlog::info("UPNP Inst : No valid UPNP Internet Gateway Device found.");
             return false;
         }
         break;
@@ -229,9 +242,9 @@ bool NetworkCandy::uPnPHandler::_initUPnP() {
     #endif
 
     /* discover devices from IPv4 */
-    if (_discoverDevicesIPv4() != 0) {
+    if (_discoverDevicesIPv6() != 0) {
         /* discover devices IPv6 */
-        if(_discoverDevicesIPv6() != 0) {
+        if(_discoverDevicesIPv4() != 0) {
             // fails !
             spdlog::info("UPNP Inst : No IGD UPnP Device found on the network !");
             return false;

@@ -109,8 +109,16 @@ const std::string& NetworkCandy::uPnPHandler::portToMap() const {
     return _targetPort;
 }
 
+int NetworkCandy::uPnPHandler::_discoverDevicesIPv4() {
+    return _discoverDevices(false, "with IPv4");
+}
+
+int NetworkCandy::uPnPHandler::_discoverDevicesIPv6() {
+    return _discoverDevices(true, "with IPv6");
+}
+
 // returns error code if any
-int NetworkCandy::uPnPHandler::_discoverDevices(bool useIpV6) {
+int NetworkCandy::uPnPHandler::_discoverDevices(bool useIpV6, const char * protocolDescr) {
     // not used
     char* _multicastif = nullptr;
     char* _minissdpdpath = nullptr;
@@ -129,15 +137,15 @@ int NetworkCandy::uPnPHandler::_discoverDevices(bool useIpV6) {
 
     // if not devices found...
     if(!_devicesList) {
-        spdlog::info("UPNP Inst : upnpDiscover() error code= {}", error);
+        spdlog::info("UPNP Inst : upnpDiscover() {} error code= {}", protocolDescr, error);
         return error;
     }
 
     // iterate through devices discovered
     UPNPDev* device;
-    spdlog::info("UPNP Inst : List of UPNP devices found on the network :");
+    spdlog::info("UPNP Inst : List of UPNP devices {} found on the network :", protocolDescr);
     for (device = _devicesList; device; device = device->pNext) {
-        spdlog::info("UPNP Inst : desc: {} st: {}", device->descURL, device->st);
+        spdlog::info("UPNP Inst : -> desc: {} st: {}", device->descURL, device->st);
     }
 
     // succeeded !
@@ -167,14 +175,21 @@ bool NetworkCandy::uPnPHandler::_getExternalIP() {
 // returns if succeeded
 bool NetworkCandy::uPnPHandler::_getValidIGD() {
     // request
-    int result;
-    result = UPNP_GetValidIGD(_devicesList, &_urls, &_IGDData, _localIPAddress, sizeof(_localIPAddress));
+    auto result = UPNP_GetValidIGD(
+        _devicesList, 
+        &_urls, 
+        &_IGDData, 
+        _localIPAddress, 
+        sizeof(_localIPAddress)
+    );
 
-    // if no IGD found
-    if(!result) return false;
-
-    // more diag messages
+    // handle returns
     switch (result) {
+        case 0: {
+            spdlog::info("UPNP Inst : No valid UPNP Internet Gateway Device found");
+            return false;
+        }
+        break;
         case 1:
             spdlog::info("UPNP Inst : Found valid IGD : {}", _urls.controlURL);
             break;
@@ -189,7 +204,10 @@ bool NetworkCandy::uPnPHandler::_getValidIGD() {
         default:
             spdlog::info("UPNP Inst : Found device (igd ?) : {}", _urls.controlURL);
             spdlog::info("UPNP Inst : Trying to continue anyway");
+            break;
     }
+
+    //
     spdlog::info("UPNP Inst : Local LAN ip address {}", _localIPAddress);
 
     // succeeded !
@@ -209,9 +227,9 @@ bool NetworkCandy::uPnPHandler::_initUPnP() {
     #endif
 
     /* discover devices from IPv4 */
-    if (_discoverDevices(false) != 0) {
+    if (_discoverDevicesIPv4() != 0) {
         /* discover devices IPv6 */
-        if(_discoverDevices(true) != 0) {
+        if(_discoverDevicesIPv6() != 0) {
             // fails !
             spdlog::info("UPNP Inst : No IGD UPnP Device found on the network !");
             return false;
@@ -220,7 +238,6 @@ bool NetworkCandy::uPnPHandler::_initUPnP() {
 
     /* get IGD */
     if(!_getValidIGD()) {
-        spdlog::info("UPNP Inst : No valid UPNP Internet Gateway Device found");
         return false;
     }
 

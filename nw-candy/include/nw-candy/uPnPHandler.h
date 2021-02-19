@@ -75,7 +75,9 @@ class uPnPHandler {
     const std::string _targetPort;
 
     // returns error code if any
-    int _discoverDevices(bool useIpV6);
+    int _discoverDevicesIPv4();
+    int _discoverDevicesIPv6();
+    int _discoverDevices(bool useIpV6, const char * protocolDescr);
 
     // returns if succeeded
     bool _getExternalIP();

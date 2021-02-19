@@ -1,2 +1,2 @@
-add_executable(tests tests.cpp)
-target_link_libraries(tests PRIVATE nw-candy ole32)
+add_executable(uPnPTests uPnPTests.cpp)
+target_link_libraries(uPnPTests PRIVATE nw-candy ole32)

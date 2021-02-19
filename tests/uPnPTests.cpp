@@ -17,11 +17,13 @@
 // for further details. Resources without explicit references to a
 // different license and copyright still refer to this GPL.
 
-#include <nw-candy/ConnectivityManager.h>
+#include <nw-candy/uPnPHandler.h>
+#include <iostream>
+
 int main() {
-    NetworkCandy::ConnectivityManager cm;
-    cm.initCOM();
-    cm.listenForConnectivityChanges();
-    cm.releaseCOM();
-    return 0;
+    NetworkCandy::uPnPHandler uPnPHandler("31137", "RPGRPZ");
+    uPnPHandler.ensurePortMapping();
+    uPnPHandler.mayDeletePortMapping();
+    std::cout << "Press Enter to end\n";
+    std::cin.ignore();
 }

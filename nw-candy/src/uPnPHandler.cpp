@@ -51,8 +51,8 @@ bool NetworkCandy::uPnPHandler::ensurePortMapping() {
         }
 
         // no redirection set, try to ask for one
-        auto redirectCode = _impl->portforward(&_hasRedirect, _localIPAddress);
-        if (redirectCode) return false;
+        _impl->portforward(&_hasRedirect, _localIPAddress);
+        return _hasRedirect;
 
     } catch(...) {
         // log on exception

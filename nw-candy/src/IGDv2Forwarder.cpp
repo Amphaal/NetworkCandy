@@ -66,6 +66,7 @@ int IGDv2Forwarder::portforward(bool* isForwarded, const char* localIp, const ch
 
     // success !
     *isForwarded = true;
+    spdlog::info("UPNP AskRedirect : Redirection OK !");
     return 0;
 }
 

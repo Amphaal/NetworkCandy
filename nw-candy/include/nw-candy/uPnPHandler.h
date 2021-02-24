@@ -87,6 +87,8 @@ class uPnPHandler {
 
     // returns if succeeded
     bool _initUPnP();
+
+    bool _isIGDv2(const char * serviceType);
 };
 
 }  // namespace NetworkCandy

@@ -24,14 +24,14 @@
 #include <miniupnpc/upnpcommands.h>
 #include <miniupnpc/upnperrors.h>
 
-IDGv1Forwarder::IDGv1Forwarder(const std::string& port, const std::string& PROTOCOL, const char * controlURL, const char * servicetype, const char * description) : 
+IGDv1Forwarder::IGDv1Forwarder(const std::string& port, const std::string& PROTOCOL, const char * controlURL, const char * servicetype, const char * description) : 
     uPnPForwarderImpl(port, PROTOCOL, controlURL, servicetype), _description(description) { }
 
-IDGv1Forwarder::~IDGv1Forwarder() {}
+IGDv1Forwarder::~IGDv1Forwarder() {}
 
-int IDGv1Forwarder::portforwardExists(bool* isForwarded) {
+int IGDv1Forwarder::portforwardExists(bool* isForwarded) {
     // getter args
-    char intClient[40];
+    char intClient[16];
     char intPort[6];
     char duration[16];
 
@@ -71,7 +71,7 @@ int IDGv1Forwarder::portforwardExists(bool* isForwarded) {
     return 0;
 }
 
-int IDGv1Forwarder::portforward(bool* isForwarded, const char* localIp, const char* leaseTime) {
+int IGDv1Forwarder::portforward(bool* isForwarded, const char* localIp, const char* leaseTime) {
     auto result = UPNP_AddPortMapping(
         _controlURL,
         _servicetype,
@@ -105,7 +105,7 @@ int IDGv1Forwarder::portforward(bool* isForwarded, const char* localIp, const ch
     return 0;
 }
 
-int IDGv1Forwarder::removePortforward(bool* isForwarded) {
+int IGDv1Forwarder::removePortforward(bool* isForwarded) {
     // request
     auto result = UPNP_DeletePortMapping(
         _controlURL,

@@ -24,18 +24,18 @@
 #include <miniupnpc/upnpcommands.h>
 #include <miniupnpc/upnperrors.h>
 
-IDGv2Forwarder::IDGv2Forwarder(const std::string& port, const std::string& PROTOCOL, const char * controlURL, const char * servicetype) : 
+IGDv2Forwarder::IGDv2Forwarder(const std::string& port, const std::string& PROTOCOL, const char * controlURL, const char * servicetype) : 
     uPnPForwarderImpl(port, PROTOCOL, controlURL, servicetype) { }
 
-IDGv2Forwarder::~IDGv2Forwarder() {}
+IGDv2Forwarder::~IGDv2Forwarder() {}
 
-int IDGv2Forwarder::portforwardExists(bool* isForwarded) {
+int IGDv2Forwarder::portforwardExists(bool* isForwarded) {
     // always go for pinholing
     *isForwarded = false;
     return 0;
 }
 
-int IDGv2Forwarder::portforward(bool* isForwarded, const char* localIp, const char* leaseTime) {    
+int IGDv2Forwarder::portforward(bool* isForwarded, const char* localIp, const char* leaseTime) {    
     auto result = UPNP_AddPinhole(
         _controlURL, 
         _servicetype, 
@@ -69,7 +69,7 @@ int IDGv2Forwarder::portforward(bool* isForwarded, const char* localIp, const ch
     return 0;
 }
 
-int IDGv2Forwarder::removePortforward(bool* isForwarded) {
+int IGDv2Forwarder::removePortforward(bool* isForwarded) {
     //
     if(_wp_id[0] == '\0') {
         spdlog::info("UPNP RemoveRedirect : UPNP_DeletePinhole() cannot be called since no pinhole ID is registered !");

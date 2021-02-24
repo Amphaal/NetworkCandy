@@ -60,11 +60,15 @@ bool NetworkCandy::uPnPHandler::ensurePortMapping() {
 }
 
 uPnPForwarderImpl* NetworkCandy::uPnPHandler::_createAppropriateIGDImplementation() {
-    // assume hole punching is available ?
+    // checks
+    bool isIGDv2 = _isIGDv2(_IGDData.first.servicetype);
     auto &FC_st = _IGDData.IPv6FC.servicetype;
-    if(FC_st[0] != '\0') {
-        spdlog::info("UPNP run : FirewallControl service existing, trying IDGv2 implementation.");
-        return new IDGv2Forwarder(
+    bool hasFirewallControl = FC_st[0] != '\0';
+    
+    // assume hole punching is available ?
+    if(hasFirewallControl) {
+        spdlog::info("UPNP run : FirewallControl service existing, trying IGDv2 implementation.");
+        return new IGDv2Forwarder(
             _targetPort,
             PROTOCOL,
             _urls.controlURL_6FC,
@@ -72,9 +76,14 @@ uPnPForwarderImpl* NetworkCandy::uPnPHandler::_createAppropriateIGDImplementatio
         );
     }
 
-    // use default impl
-    spdlog::info("UPNP run : no FirewallControl service found, using IDGv1 implementation.");
-    return new IDGv1Forwarder(
+    //
+    if(!hasFirewallControl && isIGDv2) {
+        spdlog::warn("UPNP run : Detecting IGDv2 but no FirewallControl, something is fishy with device uPnP implementation !");
+    }
+
+    // anyways, use default impl
+    spdlog::info("UPNP run : no FirewallControl service found, trying to use IGDv1 implementation.");
+    return new IGDv1Forwarder(
         _targetPort,
         PROTOCOL,
         _urls.controlURL,
@@ -123,6 +132,10 @@ int NetworkCandy::uPnPHandler::_discoverDevicesIPv6() {
     return _discoverDevices(true, "with IPv6");
 }
 
+bool NetworkCandy::uPnPHandler::_isIGDv2(const char * serviceType) {
+    return strcmp(serviceType, "urn:schemas-upnp-org:device:InternetGatewayDevice:2") == 0;
+}
+
 // returns error code if any
 int NetworkCandy::uPnPHandler::_discoverDevices(bool useIpV6, const char * protocolDescr) {
     // not used
@@ -154,12 +167,26 @@ int NetworkCandy::uPnPHandler::_discoverDevices(bool useIpV6, const char * proto
         return -998;
     }
 
+    bool hasIGDv2 = false;
+
     // iterate through devices discovered
     UPNPDev* device;
     spdlog::info("UPNP Inst : List of {} UPNP devices found on the network :", protocolDescr);
     for (device = _devicesList; device; device = device->pNext) {
         // log each
         spdlog::info("UPNP Inst : -> desc: {} st: {}", device->descURL, device->st);
+        
+        // if IPv6 search, check if this device is v2 compatible
+        if(useIpV6 && !hasIGDv2 && _isIGDv2(device->st)) {
+            hasIGDv2 = true;
+        }
+    }
+
+    // if using IPv6 but has no IGDv2 device, error !
+    if(useIpV6 && !hasIGDv2) {
+        spdlog::info("UPNP Inst : upnpDiscover() did not find an appropriate IGDv2 device compatible with IPv6");
+        freeUPNPDevlist(_devicesList);
+        return -996;
     }
 
     // succeeded !

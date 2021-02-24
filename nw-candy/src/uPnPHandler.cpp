@@ -44,8 +44,11 @@ bool NetworkCandy::uPnPHandler::ensurePortMapping() {
         
         // check if has redirection already done
         auto errCode = _impl->portforwardExists(&_hasRedirect);
-        if (errCode) return false;
-        if (_hasRedirect) return true;
+        if (_hasRedirect) {
+            return true;
+        } else if (errCode && !_hasRedirect) {
+            spdlog::info("UPNP run : cannot ensure that port mapping exist, continuing...");
+        }
 
         // no redirection set, try to ask for one
         auto redirectCode = _impl->portforward(&_hasRedirect, _localIPAddress);

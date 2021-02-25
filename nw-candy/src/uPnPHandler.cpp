@@ -34,6 +34,9 @@ bool NetworkCandy::uPnPHandler::ensurePortMapping() {
 
     //
     try {
+        //
+        _hasRedirect = false;
+
         // init uPnP...
         auto initOK = this->_initUPnP();
         if (!initOK) return false;
@@ -160,13 +163,13 @@ int NetworkCandy::uPnPHandler::_discoverDevices(bool useIpV6, const char * proto
 
     // if error
     if(error) {
-        spdlog::info("UPNP Inst : upnpDiscover() {} error code= {}", protocolDescr, error);
+        spdlog::warn("UPNP Inst : upnpDiscover() {} error code= {}", protocolDescr, error);
         return error;
     }
 
     // if not devices found, most probably a timeout
     if(!_devicesList) {
-        spdlog::info("UPNP Inst : upnpDiscover() {} has most probably timed out, no devices found !", protocolDescr);
+        spdlog::warn("UPNP Inst : upnpDiscover() {} has most probably timed out, no devices found !", protocolDescr);
         return -998;
     }
 
@@ -187,7 +190,7 @@ int NetworkCandy::uPnPHandler::_discoverDevices(bool useIpV6, const char * proto
 
     // if using IPv6 but has no IGDv2 device, error !
     if(useIpV6 && !hasIGDv2) {
-        spdlog::info("UPNP Inst : upnpDiscover() did not find an appropriate IGDv2 device compatible with IPv6");
+        spdlog::warn("UPNP Inst : upnpDiscover() did not find an appropriate IGDv2 device compatible with IPv6");
         freeUPNPDevlist(_devicesList);
         return -996;
     }
@@ -207,7 +210,7 @@ bool NetworkCandy::uPnPHandler::_getExternalIP() {
 
     // if failed
     if (r != UPNPCOMMAND_SUCCESS) {
-        spdlog::info("UPNP GetExternalIPAddress : No IGD UPnP Device");
+        spdlog::warn("UPNP GetExternalIPAddress : Cannot fetch external IP !");
         return false;
     }
 
@@ -231,7 +234,7 @@ bool NetworkCandy::uPnPHandler::_getValidIGD() {
     // handle returns
     switch (result) {
         case 0: {
-            spdlog::info("UPNP Inst : No valid UPNP Internet Gateway Device found.");
+            spdlog::warn("UPNP Inst : No valid UPNP Internet Gateway Device found.");
             return false;
         }
         break;
@@ -266,7 +269,7 @@ bool NetworkCandy::uPnPHandler::_initUPnP() {
     #ifdef _WIN32
         auto nResult = WSAStartup(_requestedVersion, &_wsaData);
         if (nResult != NO_ERROR) {
-            spdlog::info("UPNP Inst : Cannot init socket with WSAStartup !");
+            spdlog::warn("UPNP Inst : Cannot init socket with WSAStartup !");
             return false;
         }
     #endif
@@ -276,7 +279,7 @@ bool NetworkCandy::uPnPHandler::_initUPnP() {
         /* discover devices IPv6 */
         if(_discoverDevicesIPv4() != 0) {
             // fails !
-            spdlog::info("UPNP Inst : No IGD UPnP Device found on the network !");
+            spdlog::warn("UPNP Inst : No IGD UPnP Device found on the network !");
             return false;
         }
     }

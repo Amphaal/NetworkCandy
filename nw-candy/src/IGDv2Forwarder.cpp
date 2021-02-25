@@ -30,6 +30,26 @@ IGDv2Forwarder::IGDv2Forwarder(const std::string& port, const std::string& PROTO
 IGDv2Forwarder::~IGDv2Forwarder() {}
 
 int IGDv2Forwarder::portforwardExists(bool* isForwarded) {
+    int firewallEnabled = 0, pinholingAllowed = 0;
+    auto result = UPNP_GetFirewallStatus(_controlURL, _servicetype, &firewallEnabled, &pinholingAllowed);
+
+    if (result != UPNPCOMMAND_SUCCESS) {
+        spdlog::warn("UPNP CheckRedirect : GetFirewallStatus() failed with code {} ({})", result, strupnperror(result));
+        return result;
+    }
+
+    // if firewall is not enabled, no need to pinhole !
+    if(!firewallEnabled) {
+        spdlog::info("UPNP CheckRedirect : Firewall is disabled, no need to pinhole !");
+        *isForwarded = true;
+        return 0;
+    } else if(!pinholingAllowed) {
+        spdlog::warn("UPNP CheckRedirect : Firewall is active, and pinholing is not allowed !");
+        return -123;
+    }
+
+    spdlog::info("UPNP CheckRedirect : Firewall active and allowing pinholing. Continuing...");
+    
     // always go for pinholing
     *isForwarded = false;
     return 0;
@@ -43,7 +63,7 @@ int IGDv2Forwarder::portforward(bool* isForwarded, const char* localIp, const ch
         _portToForward.c_str(),
         localIp,
         _portToForward.c_str(),
-        _protocol.c_str(),
+        _protocol.c_str(), // TODO forcing wildcard ?!
         leaseTime,
         _wp_id
     );
@@ -57,8 +77,7 @@ int IGDv2Forwarder::portforward(bool* isForwarded, const char* localIp, const ch
 
     // check if error
     else if (result != UPNPCOMMAND_SUCCESS) {
-        spdlog::info(
-            "UPNP AskRedirect : UPNP_AddPinhole({}, {}) failed with code {} ({})",
+        spdlog::warn("UPNP AskRedirect : UPNP_AddPinhole({}, {}) failed with code {} ({})",
             _portToForward, localIp, result, strupnperror(result)
         );
         return result;
@@ -73,7 +92,7 @@ int IGDv2Forwarder::portforward(bool* isForwarded, const char* localIp, const ch
 int IGDv2Forwarder::removePortforward(bool* isForwarded) {
     //
     if(_wp_id[0] == '\0') {
-        spdlog::info("UPNP RemoveRedirect : UPNP_DeletePinhole() cannot be called since no pinhole ID is registered !");
+        spdlog::warn("UPNP RemoveRedirect : UPNP_DeletePinhole() cannot be called since no pinhole ID is registered !");
         return -999;
     } 
 
@@ -86,7 +105,7 @@ int IGDv2Forwarder::removePortforward(bool* isForwarded) {
 
     // check error
     if (result != UPNPCOMMAND_SUCCESS) {
-        spdlog::info("UPNP RemoveRedirect : UPNP_DeletePinhole() failed with code :{}", result);
+        spdlog::warn("UPNP RemoveRedirect : UPNP_DeletePinhole() failed with code :{}", result);
         return result;
     }
 

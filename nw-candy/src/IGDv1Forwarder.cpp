@@ -58,13 +58,12 @@ int IGDv1Forwarder::portforwardExists(bool* isForwarded) {
 
     // if any code
     if (result != UPNPCOMMAND_SUCCESS) {
-        spdlog::info("UPNP CheckRedirect : GetSpecificPortMappingEntry() failed with code {} ({})", result, strupnperror(result));
+        spdlog::warn("UPNP CheckRedirect : GetSpecificPortMappingEntry() failed with code {} ({})", result, strupnperror(result));
         return result;
     }
 
     // else, has redirect
-    spdlog::info(
-        "UPNP CheckRedirect : {}[{}] is redirected to internal {} : {} (duration={})",
+    spdlog::info("UPNP CheckRedirect : {}[{}] is redirected to internal {} : {} (duration={})",
         _portToForward, _protocol, intClient, intPort, duration
     );
     *isForwarded = true;
@@ -93,8 +92,7 @@ int IGDv1Forwarder::portforward(bool* isForwarded, const char* localIp, const ch
 
     // check if error
     if (result != UPNPCOMMAND_SUCCESS) {
-        spdlog::info(
-            "UPNP AskRedirect : AddPortMapping({},{}, {}) failed with code {} ({})",
+        spdlog::warn("UPNP AskRedirect : AddPortMapping({},{}, {}) failed with code {} ({})",
             _portToForward, _portToForward, localIp, result, strupnperror(result)
         );
         return result;
@@ -118,7 +116,7 @@ int IGDv1Forwarder::removePortforward(bool* isForwarded) {
 
     // check error
     if (result != UPNPCOMMAND_SUCCESS) {
-        spdlog::info("UPNP RemoveRedirect : UPNP_DeletePortMapping() failed with code :{}", result);
+        spdlog::warn("UPNP RemoveRedirect : UPNP_DeletePortMapping() failed with code :{}", result);
         return result;
     }
 

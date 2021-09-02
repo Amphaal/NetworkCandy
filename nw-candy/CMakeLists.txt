@@ -33,6 +33,11 @@ target_link_libraries(nw-candy PRIVATE ole32)
 #find miniupnpc
 find_package(miniupnpc REQUIRED)
 
+# on MacOS brew, points directly to miniupnpc folder, we do not want that
+if(APPLE)
+    get_filename_component(MINIUPNP_INCLUDE_DIR ${MINIUPNP_INCLUDE_DIR} DIRECTORY)
+endif()
+
 #define
 add_library(miniupnpc INTERFACE)
 target_link_libraries(miniupnpc INTERFACE ${MINIUPNP_LIBRARY})
@@ -43,7 +48,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 endif()
 
 #link
-target_link_libraries(nw-candy INTERFACE miniupnpc)
+target_link_libraries(nw-candy PUBLIC miniupnpc)
 
 #################
 # Deps : spdlog #

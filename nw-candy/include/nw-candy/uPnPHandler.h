@@ -1,6 +1,6 @@
 // NetworkCandy
 // Network system notifications and uPnP shenanigans
-// Copyright (C) 2020 Guillaume Vara
+// Copyright (C) 2020-2021 Guillaume Vara
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
